@@ -8,8 +8,8 @@ export class Etcd3Manager {
     private _config: Etcd3Config;
 
     constructor(config: Etcd3Config) {
-        this._client = new Etcd3(config.client);
         this._config = config;
+        this._client = new Etcd3(config.client);
     }
 
     get client(): Etcd3 {

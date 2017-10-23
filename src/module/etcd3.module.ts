@@ -1,10 +1,10 @@
 import { HapinessModule } from '@hapiness/core';
-import { Etcd3Service, LeaderCandidate, WatcherWrapper } from './services';
+import { Etcd3Service } from './services';
 
 @HapinessModule({
     version: '1.0.0',
     declarations: [],
     providers: [],
-    exports: [ Etcd3Service, LeaderCandidate, WatcherWrapper ]
+    exports: [ Etcd3Service ]
 })
 export class Etcd3Module {}

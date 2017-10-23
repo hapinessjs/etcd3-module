@@ -6,7 +6,6 @@
     "types": "index.d.ts",
     "private": false,
     "scripts": {
-        "go-product": "./node_modules/.bin/ts-node _tmp/tdw-wrapper/testcase.productapi.ts",
         "test": "make test",
         "pretest": "make pretest",
         "coveralls": "make coveralls",
@@ -63,17 +62,13 @@
     },
     "homepage": "https://github.com/hapinessjs/etcd3-module#readme",
     "dependencies": {
-        "@hapiness/config": "^1.0.0-rc.6.1",
         "@types/node": "^8.0.14",
         "bignumber.js": "^4.1.0",
-        "bluebird": "^3.5.1",
         "debug": "^3.0.1",
-        "etcd3": "file:_tmp/mixer/etcd3",
-        "install": "^0.10.1",
-        "npm": "^5.4.2"
+        "etcd3": "^0.2.5"
     },
     "devDependencies": {
-        "@hapiness/core": "^1.0.0",
+        "@hapiness/core": "^1.0.1",
         "@types/fs-extra": "^4.0.1",
         "coveralls": "^3.0.0",
         "fs-extra": "^4.0.0",

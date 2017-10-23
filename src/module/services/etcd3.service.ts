@@ -26,7 +26,8 @@ export class Etcd3Service {
 
 
     constructor(@Inject(Etcd3Ext) private _manager: Etcd3Manager) {
-        let basePath = '';
+        let basePath = '/';
+
         if (this._manager.config.basePath) {
             basePath = this._manager.config.basePath;
             if (!this._manager.config.basePath.endsWith('/')) {
@@ -35,7 +36,17 @@ export class Etcd3Service {
         }
 
         this._basePath = basePath;
+
         this._client = this._manager.client.namespace(this._basePath);
+    }
+
+    /**
+     *
+     * @returns {string} The value of the base path
+     *
+     */
+    public get basePath(): string {
+        return this._basePath;
     }
 
     /**
@@ -78,17 +89,16 @@ export class Etcd3Service {
      *
      */
     public get(key: string, format: ResponseFormat = ResponseFormat.String):
-        Observable<string | object | number | Buffer | null | Error> {
-        const promise = this._client.get(key);
+        Observable<string | object | Buffer | null | Error> {
+        const promise = this.client.get(key);
         switch (format) {
             case ResponseFormat.String:
                 return Observable.fromPromise(promise.string());
             case ResponseFormat.Json:
                 return Observable.fromPromise(promise.json());
-            case ResponseFormat.Number:
-                return Observable.fromPromise(promise.number());
             case ResponseFormat.Buffer:
                 return Observable.fromPromise(promise.buffer());
+            default:
         }
 
         return Observable.throw(new Error('Format not supported'));
@@ -104,9 +114,9 @@ export class Etcd3Service {
      * @returns {IPutResponse} The result of the operation
      *
      */
-    public put(key: string, value: string | Buffer | number): Observable<IPutResponse> {
+    public put(key: string, value: string | Buffer): Observable<IPutResponse> {
         return Observable.fromPromise(
-            this._client.put(key).value(value).exec()
+            this.client.put(key).value(value).exec()
         );
     }
 
@@ -190,7 +200,7 @@ export class Etcd3Service {
      * @returns {Lease} The lease instance created
      *
      */
-    public createLeaseWithValue(key: string, value: string | Buffer | number, ttl: number = 1): Observable<Lease> {
+    public createLeaseWithValue(key: string, value: string | Buffer, ttl: number = 1): Observable<Lease> {
         const lease = this.client.lease(ttl || 1);
         return Observable.fromPromise(
             lease.put(key).value(value).exec().then(_ => lease)
