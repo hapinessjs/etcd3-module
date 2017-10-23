@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@hapiness/core';
 
-import { Etcd3, Namespace, PutBuilder, SingleRangeBuilder, Watcher, Lock, IPutResponse, Lease } from 'etcd3';
+import { Etcd3, Namespace, Watcher, Lock, IPutResponse, Lease } from 'etcd3';
 import { Observable } from 'rxjs';
 
 import { ResponseFormat } from '../interfaces';

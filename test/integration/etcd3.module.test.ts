@@ -2,7 +2,7 @@
 /**
  * @see https://github.com/pana-cc/mocha-typescript
  */
-import { test, suite, only } from 'mocha-typescript';
+import { test, suite } from 'mocha-typescript';
 
 /**
  * @see http://unitjs.com/
@@ -10,16 +10,13 @@ import { test, suite, only } from 'mocha-typescript';
 import * as unit from 'unit.js';
 import * as etcdLib from 'etcd3';
 
-import { extractMetadata } from '@hapiness/core/core';
-import { Hapiness, HapinessModule, OnStart, Inject } from '@hapiness/core';
-import { HttpServerExt, Server } from '@hapiness/core/extensions/http-server';
-
-import { Observable } from 'rxjs/Observable';
+import { Hapiness, HapinessModule, OnStart } from '@hapiness/core';
+import { HttpServerExt } from '@hapiness/core/extensions/http-server';
 
 import { Etcd3Ext, Etcd3Module, Etcd3Service } from '../../src';
 
 @suite('- Integration tests of Etcd3Module')
-class Etcd3ModuleIntegrationTest {
+export class Etcd3ModuleIntegrationTest {
 
     private _mock: any;
 
@@ -68,10 +65,7 @@ class Etcd3ModuleIntegrationTest {
             imports: [Etcd3Module]
         })
         class MinioModuleTest implements OnStart {
-            constructor(
-                @Inject(HttpServerExt) private _httpServer: Server,
-                private _etcdService: Etcd3Service
-            ) { }
+            constructor(private _etcdService: Etcd3Service) {}
 
             onStart(): void {
                 unit.value(this._etcdService.basePath).is('/base_path/');

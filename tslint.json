@@ -12,7 +12,6 @@
       true,
       "spaces"
     ],
-    "noUnusedLocals": true,
     "label-position": true,
     "max-line-length": [
       true,
