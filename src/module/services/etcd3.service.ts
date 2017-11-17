@@ -4,7 +4,6 @@ import { Etcd3, Namespace, Watcher, Lock, IPutResponse, Lease } from 'etcd3';
 import { Observable } from 'rxjs';
 
 import { ResponseFormat } from '../interfaces';
-import { Etcd3Manager } from '../managers';
 import { Etcd3Ext } from '../etcd3.extension';
 
 @Injectable()
@@ -25,7 +24,7 @@ export class Etcd3Service {
     private _client: Namespace;
 
 
-    constructor(@Inject(Etcd3Ext) private _manager: Etcd3Manager) {
+    constructor(@Inject(Etcd3Ext) private _manager) {
         let basePath = '/';
 
         if (this._manager.config.basePath) {
@@ -99,9 +98,8 @@ export class Etcd3Service {
             case ResponseFormat.Buffer:
                 return Observable.fromPromise(promise.buffer());
             default:
+                return Observable.throw(new Error('Format not supported'));
         }
-
-        return Observable.throw(new Error('Format not supported'));
     }
 
     /**
@@ -114,9 +112,28 @@ export class Etcd3Service {
      * @returns {IPutResponse} The result of the operation
      *
      */
-    public put(key: string, value: string | Buffer): Observable<IPutResponse> {
+    public put(key: string, value: string | number | Object | Buffer): Observable<IPutResponse> {
+        if (!value) {
+            return Observable.throw(new Error('"value" should not be null nor undefined'));
+        }
+
+        let _value: string | number | Buffer;
+
+        if (typeof value === 'object') {
+            try {
+                const tmp = JSON.parse(JSON.stringify(value));
+                if (tmp.type !== 'Buffer') {
+                    _value = JSON.stringify(value);
+                }
+            } catch (err) {
+                return Observable.throw(new Error('Unknown type of "value"'));
+            }
+        } else {
+            _value = value;
+        }
+
         return Observable.fromPromise(
-            this.client.put(key).value(value).exec()
+            this.client.put(key).value(_value).exec()
         );
     }
 
