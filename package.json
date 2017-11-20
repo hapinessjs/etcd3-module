@@ -2,7 +2,7 @@
     "name": "@hapiness/etcd3",
     "version": "1.0.0",
     "description": "Hapiness module for etcd3",
-    "main": "index.js",
+    "main": "commonjs/index.js",
     "types": "index.d.ts",
     "private": false,
     "scripts": {
@@ -67,7 +67,7 @@
         "etcd3": "^0.2.6"
     },
     "devDependencies": {
-        "@hapiness/core": "^1.2.0",
+        "@hapiness/core": "^1.2.2",
         "@types/fs-extra": "^4.0.1",
         "coveralls": "^3.0.0",
         "fs-extra": "^4.0.0",
