@@ -10,8 +10,7 @@ import { test, suite } from 'mocha-typescript';
 import * as unit from 'unit.js';
 import * as etcdLib from 'etcd3';
 
-import { Hapiness, HapinessModule, OnStart } from '@hapiness/core';
-import { HttpServerExt } from '@hapiness/core/extensions/http-server';
+import { Hapiness, HapinessModule, HttpServerExt, OnStart } from '@hapiness/core';
 
 import { Etcd3Ext, Etcd3Module, Etcd3Service } from '../../src';
 

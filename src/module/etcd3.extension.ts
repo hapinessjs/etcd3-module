@@ -3,7 +3,6 @@ import { CoreModule, Extension, ExtensionWithConfig, OnExtensionLoad } from '@ha
 import { Observable } from 'rxjs/Observable';
 
 import { Etcd3Manager } from './managers';
-
 import { Etcd3Config } from './interfaces';
 
 export class Etcd3Ext implements OnExtensionLoad {
