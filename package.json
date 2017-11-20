@@ -63,12 +63,11 @@
     "homepage": "https://github.com/hapinessjs/etcd3-module#readme",
     "dependencies": {
         "@types/node": "^8.0.14",
-        "bignumber.js": "^4.1.0",
         "debug": "^3.0.1",
         "etcd3": "^0.2.6"
     },
     "devDependencies": {
-        "@hapiness/core": "^1.1.0",
+        "@hapiness/core": "^1.2.0",
         "@types/fs-extra": "^4.0.1",
         "coveralls": "^3.0.0",
         "fs-extra": "^4.0.0",
@@ -83,7 +82,7 @@
         "unit.js": "^2.0.0"
     },
     "peerDependencies": {
-        "@hapiness/core": "^1.1.0",
+        "@hapiness/core": "^1.2.0",
         "rxjs": "^5.4.2"
     },
     "engines": {
