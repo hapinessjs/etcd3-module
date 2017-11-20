@@ -135,10 +135,71 @@ export class Etcd3ServiceTest {
     }
 
     /**
-     * Test of `Etcd3Service` method put
+     * Test of `Etcd3Service` method put with undefined value should return error
      */
-    @test('- Test of `Etcd3Service` method put')
-    testEtcd3ServicePutFunction(done) {
+    @test('- Test of `Etcd3Service` method put with undefined value should return error')
+    testEtcd3ServicePutFunctionThrowError(done) {
+        const valueStub = unit.stub().returns({ exec: () => Promise.resolve() });
+        const putStub = unit.stub().returns({ value: valueStub });
+        const nsStub = unit.stub().returns({ put: putStub });
+
+        const instance = new Etcd3Service(<any>{
+            client: { namespace: nsStub },
+            config: { basePath: '/basepath' }
+        });
+
+        // Default format is string
+        instance
+            .put('key', undefined)
+            .subscribe(
+                _ => {
+                    done(new Error('Should not be there'));
+                },
+                err => {
+                    unit.string(err.message).is('"value" should not be null nor undefined');
+                    done();
+                }
+            );
+    }
+
+    /**
+     * Test of `Etcd3Service` method put with normal object
+     */
+    @test('- Test of `Etcd3Service` method put with normal object')
+    testEtcd3ServicePutFunctionWithObject(done) {
+        const valueStub = unit.stub().returns({ exec: () => Promise.resolve() });
+        const putStub = unit.stub().returns({ value: valueStub });
+        const nsStub = unit.stub().returns({ put: putStub });
+
+        const instance = new Etcd3Service(<any>{
+            client: { namespace: nsStub },
+            config: { basePath: '/basepath' }
+        });
+
+        // Default format is string
+        instance
+            .put('key', { test: 'micro' })
+            .subscribe(
+                _ => {
+                    unit.value(putStub.callCount).is(1);
+                    unit.value(putStub.getCall(0).args[0]).is('key');
+
+                    unit.value(valueStub.callCount).is(1);
+                    unit.value(valueStub.getCall(0).args[0]).is(JSON.stringify({ test: 'micro' }));
+
+                    unit.value(nsStub.callCount).is(1);
+
+                    done();
+                },
+                err => done(err)
+            );
+    }
+
+    /**
+     * Test of `Etcd3Service` method put with string
+     */
+    @test('- Test of `Etcd3Service` method put with string')
+    testEtcd3ServicePutFunctionWithString(done) {
         const valueStub = unit.stub().returns({ exec: () => Promise.resolve() });
         const putStub = unit.stub().returns({ value: valueStub });
         const nsStub = unit.stub().returns({ put: putStub });
@@ -158,6 +219,74 @@ export class Etcd3ServiceTest {
 
                     unit.value(valueStub.callCount).is(1);
                     unit.value(valueStub.getCall(0).args[0]).is('value');
+
+                    unit.value(nsStub.callCount).is(1);
+
+                    done();
+                },
+                err => done(err)
+            );
+    }
+
+    /**
+     * Test of `Etcd3Service` method put with Buffer
+     */
+    @test('- Test of `Etcd3Service` method put with Buffer')
+    testEtcd3ServicePutFunctionWithBuffer(done) {
+        const valueStub = unit.stub().returns({ exec: () => Promise.resolve() });
+        const putStub = unit.stub().returns({ value: valueStub });
+        const nsStub = unit.stub().returns({ put: putStub });
+
+        const instance = new Etcd3Service(<any>{
+            client: { namespace: nsStub },
+            config: { basePath: '/basepath' }
+        });
+
+        const buff: Buffer = Buffer.from('Say hi');
+
+        // Default format is string
+        instance
+            .put('key', buff)
+            .subscribe(
+                _ => {
+                    unit.value(putStub.callCount).is(1);
+                    unit.value(putStub.getCall(0).args[0]).is('key');
+
+                    unit.value(valueStub.callCount).is(1);
+                    unit.value(valueStub.getCall(0).args[0].toString('utf8')).is(buff.toString('utf8'));
+
+                    unit.value(nsStub.callCount).is(1);
+
+                    done();
+                },
+                err => done(err)
+            );
+    }
+
+    /**
+     * Test of `Etcd3Service` method put with Number
+     */
+    @test('- Test of `Etcd3Service` method put with Number')
+    testEtcd3ServicePutFunctionWithNumber(done) {
+        const valueStub = unit.stub().returns({ exec: () => Promise.resolve() });
+        const putStub = unit.stub().returns({ value: valueStub });
+        const nsStub = unit.stub().returns({ put: putStub });
+
+        const instance = new Etcd3Service(<any>{
+            client: { namespace: nsStub },
+            config: { basePath: '/basepath' }
+        });
+
+        // Default format is string
+        instance
+            .put('key', 10)
+            .subscribe(
+                _ => {
+                    unit.value(putStub.callCount).is(1);
+                    unit.value(putStub.getCall(0).args[0]).is('key');
+
+                    unit.value(valueStub.callCount).is(1);
+                    unit.value(valueStub.getCall(0).args[0]).is(10);
 
                     unit.value(nsStub.callCount).is(1);
 

@@ -120,13 +120,11 @@ export class Etcd3Service {
         let _value: string | number | Buffer;
 
         if (typeof value === 'object') {
-            try {
-                const tmp = JSON.parse(JSON.stringify(value));
-                if (tmp.type !== 'Buffer') {
-                    _value = JSON.stringify(value);
-                }
-            } catch (err) {
-                return Observable.throw(new Error('Unknown type of "value"'));
+            const tmp = JSON.parse(JSON.stringify(value));
+            if (tmp.type !== 'Buffer') {
+                _value = JSON.stringify(value);
+            } else {
+                _value = <Buffer> value;
             }
         } else {
             _value = value;
