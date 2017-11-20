@@ -5,14 +5,14 @@
     <a href="https://travis-ci.org/hapinessjs/empty-module.svg?branch=master">
         <img src="https://travis-ci.org/hapinessjs/empty-module.svg?branch=master" alt="build" />
     </a>
-    <a href="https://coveralls.io/github/hapinessjs/empty-module?branch=master">
-        <img src="https://coveralls.io/repos/github/hapinessjs/empty-module/badge.svg?branch=master" alt="coveralls" />
+    <a href="https://coveralls.io/github/hapinessjs/etcd3-module?branch=master">
+        <img src="https://coveralls.io/repos/github/hapinessjs/etcd3-module/badge.svg?branch=master" alt="coveralls" />
     </a>
-    <a href="https://david-dm.org/hapinessjs/empty-module">
+    <a href="https://david-dm.org/hapinessjs/etcd3-module">
         <img src="https://david-dm.org/hapinessjs/empty-module.svg" alt="dependencies" />
     </a>
-    <a href="https://david-dm.org/hapinessjs/empty-module?type=dev">
-        <img src="https://david-dm.org/hapinessjs/empty-module/dev-status.svg" alt="devDependencies" />
+    <a href="https://david-dm.org/hapinessjs/etcd3-module?type=dev">
+        <img src="https://david-dm.org/hapinessjs/etcd3-module/dev-status.svg" alt="devDependencies" />
     </a>
 </div>
 <div>
@@ -31,17 +31,18 @@
 </div>
 </div>
 
-# Minio Module
+# Etcd3 Module
 
-```Minio``` module for the Hapiness framework.
+```Etcd3``` module for the Hapiness framework.
 
 ## Table of contents
 
 
 * [Using your module inside Hapiness application](#using-your-module-inside-hapiness-application)
 	* [`yarn` or `npm` it in your `package.json`](#yarn-or-npm-it-in-your-package)
-	* [Importing `MinioModule` from the library](#importing-miniomodule-from-the-library)
-	* [Using `Minio` inside your application](#using-minio-inside-your-application)
+    * [Importing `Etcd3Module` from the library](#importing-etcd3module-from-the-library)
+    * [Using `Etcd3` inside your application](#using-etcd3-inside-your-application)
+* [`Etcd3Service` api](#etcd3service-api)
 
 ## Using your module inside Hapiness application
 
@@ -49,17 +50,17 @@
 ### `yarn` or `npm` it in your `package.json`
 
 ```bash
-$ npm install --save @hapiness/minio
+$ npm install --save @hapiness/etcd3
 
 or
 
-$ yarn add @hapiness/redis
+$ yarn add @hapiness/etcd3
 ```
-    
+
 ```javascript
 "dependencies": {
-    "@hapiness/core": "^1.0.0-rc.6",
-    "@hapiness/minio": "^1.0.0-rc.7",
+    "@hapiness/core": "^1.2.2",
+    "@hapiness/etcd3": "^1.0.0",
     //...
 }
 //...
@@ -68,10 +69,10 @@ $ yarn add @hapiness/redis
 [Back to top](#table-of-contents)
 
 
-### Importing `MinioModule` from the library
+### Importing `Etcd3Module` from the library
 
-This module provide an Hapiness extension for Minio.
-To use it, simply register it during the ```bootstrap``` step of your project and provide the ```MinioExt``` with its config
+This module provide an Hapiness extension for Etcd3.
+To use it, simply register it during the ```bootstrap``` step of your project and provide the ```Etcd3Ext``` with its config
 
 ```javascript
 
@@ -79,7 +80,7 @@ To use it, simply register it during the ```bootstrap``` step of your project an
     version: '1.0.0',
     providers: [],
     declarations: [],
-    imports: [MinioModule]
+    imports: [Etcd3Module]
 })
 class MyApp implements OnStart {
     constructor() {}
@@ -91,16 +92,10 @@ Hapiness
         MyApp,
         [
             /* ... */
-            MinioExt.setConfig(
+            Etcd3Ext.setConfig(
                 {
-                    connection: {
-                      endPoint: 'minio.mydomain.com',
-                      port: 443,
-                      secure: true,
-                      accessKey: 'access_key',
-                      secretKey: 'secret_key'
-                    },
-                    default_region: 'us-east-1'
+                    basePath: '/project/root';
+                    client: <IOptions> { /* options comes here */};
                 }
             )
         ]
@@ -111,47 +106,85 @@ Hapiness
 
 ```
 
-You need to provide the connection information under the ```connection``` key in the config object. You are also able to determine a default region for your buckets under the key ```default_region```. If you dont provide a ```default_region```, every functions using a region will use the value ```us-east-1``` if you dont give any to the function.
+The `basePath` key is optional and represents the prefix of all future keys. The default value is `/`.
 
-Allowed region values are:
+The `IOptions` interface let you provide config to connect etcd. Allowed fields are:
 
-- us-east-1
-- us-west-1
-- us-west-2
-- eu-west-1
-- eu-central-1
-- ap-southeast-1
-- ap-southeast-2
-- ap-northeast-1
-- sa-east-1
-- cn-north-1
+```javascript
+/**
+ * Optional client cert credentials for talking to etcd. Describe more
+ * {@link https://coreos.com/etcd/docs/latest/op-guide/security.html here},
+ * passed into the createSsl function in GRPC
+ * {@link http://www.grpc.io/grpc/node/module-src_credentials.html#.createSsl here}.
+ */
+credentials?: {
+    rootCertificate: Buffer;
+    privateKey?: Buffer;
+    certChain?: Buffer;
+},
+
+/**
+ * Internal options to configure the GRPC client. These are channel options
+ * as enumerated in their [C++ documentation](https://grpc.io/grpc/cpp/group__grpc__arg__keys.html).
+ */
+grpcOptions?: ChannelOptions,
+
+/**
+ * Etcd password auth, if using.
+ */
+auth?: {
+    username: string;
+    password: string;
+},
+
+/**
+ * A list of hosts to connect to. Hosts should include the `https?://` prefix.
+ */
+hosts: string[] | string,
+
+/**
+ * Duration in milliseconds to wait while connecting before timing out.
+ * Defaults to 30 seconds.
+ */
+dialTimeout?: number,
+
+/**
+ * Backoff strategy to use for connecting to hosts. Defaults to an
+ * exponential strategy, starting at a 500 millisecond
+ * retry with a 30 second max.
+ */
+backoffStrategy?: IBackoffStrategy,
+
+/**
+ * Whether, if a query fails as a result of a primitive GRPC error, to retry
+ * it on a different server (provided one is available). This can make
+ * service disruptions less-severe but can cause a domino effect if a
+ * particular operation causes a failure that grpc reports as some sort of
+ * internal or network error.
+ *
+ * Defaults to false.
+ */
+retry?: boolean
+
+```
 
 [Back to top](#table-of-contents)
 
 
-### Using `Minio` inside your application
+### Using `Etcd3` inside your application
 
-To use minio, you need to inject inside your providers the ```MinioService```.
-
-**NOTE:** all functions in the api return ```rxjs``` Observable
+To use the `etcd3` module, you need to inject inside your providers the ```Etcd3Service```.
 
 ```javascript
 
 class FooProvider {
 
-    constructor(private _minio: MinioService) {}
+    constructor(private _etcd3: Etcd3Service) {}
 
-    createBucketIfNotExists(bucket_name: string): Observable<boolean> {
-    	return this
-            ._minio
-            .bucketExists(bucket_name)
-            .switchMap(
-                _ => !!_ ?
-                    Observable.of(false) :
-                    this._minio.makeBucket(bucket_name)
-            );
+    getValueForKey(key: string): Observable<string | object | Buffer | null | Error> {
+    	return this._etcd3.get(key);
     }
-   
+
 }
 
 ```
@@ -159,123 +192,118 @@ class FooProvider {
 [Back to top](#table-of-contents)
 
 
-## ```MinioService``` documentation
-
-**NOTES:**
-
-- All functions in the api return ```rxjs``` Observable
-- We followed the minio nodejs lib, so for more information, please refer to [the official documentation](https://docs.minio.io/docs/javascript-client-api-reference)
+## ```Etcd3Service``` api
 
 ```javascript
-/* Get a new Copy Condition instance */
-public newMinioCopyCondition(): MinioCopyCondition;
 
-/* Get a new Post Policy instance */
-public newMinioPostPolicy(): MinioPostPolicy;
-
-/* Create a bucket */
-public makeBucket(bucketName: string, region?: MinioBucketRegion): Observable<boolean>;
-
-/* Check if a bucket already exists */
-public bucketExists(bucketName: string): Observable<boolean>;
-
-/* List all buckets */
-public listBuckets(): Observable<MinioBucket[]>;
-
-/* Lists all objects in a bucket */
-public listObjects(bucketName: string, prefix: string = '', recursive: boolean = false): Observable<MinioBucketObject>;
-
-/* Lists all objects in a bucket using S3 listing objects V2 API */
-public listObjectsV2(bucketName: string, prefix: string = '', recursive: boolean = false): Observable<MinioBucketObject>;
-
-/* Lists partially uploaded objects in a bucket */
-public listIncompleteUploads(bucketName: string, prefix: string = '', recursive: boolean = false): Observable<MinioBucketIncompleteUpload>;
-
-/* Downloads an object as a stream */
-public getObject(bucketName: string, objectName: string): Observable<ReadableStream>;
-
-/* Downloads the specified range bytes of an object as a stream */
-public getPartialObject(bucketName: string, objectName: string, offset: number, length: number = 0): Observable<ReadableStream>;
-
-/* Downloads and saves the object as a file in the local filesystem */
-public fGetObject(bucketName: string, objectName: string, filePath: string): Observable<boolean>;
-
-/* Uploads an object from a stream/Buffer */
-public putObject(bucketName: string, objectName: string, stream: ReadStream | string | Buffer, size?: number, contentType: string = 'application/octet-stream'): Observable<string>;
-
-/* Uploads contents from a file to objectName */
-public fPutObject(bucketName: string, objectName: string, filePath: string, contentType: string = 'application/octet-stream'): Observable<string>;
-
-/* Copy a source object into a new object in the specied bucket */
-public copyObject(bucketName: string, objectName: string, sourceObject: string, conditions: MinioCopyCondition): Observable<MinioCopyResult>;
-
-/*  Gets metadata of an object */
-public statObject(bucketName: string, objectName: string): Observable<MinioStatObject>;
-
-/*  Removes an object */
-public removeObject(bucketName: string, objectName: string): Observable<boolean>;
-
-/*  Removes a partially uploaded object */
-public removeIncompleteUpload(bucketName: string, objectName: string): Observable<boolean>;
-
-/* 
- * Generates a presigned URL for HTTP GET operations.
- * Browsers/Mobile clients may point to this URL to directly download objects even if the bucket is private.
- * This presigned URL can have an associated expiration time in seconds after which the URL is no longer valid.
- * The default expiry is set to 7 days
+/**
+ *
+ * @returns {string} The value of the base path
+ *
  */
-public presignedGetObject(bucketName: string, objectName: string, expiry: number = 604800): Observable<string>;
+public get basePath(): string;
 
-/* 
- * Generates a presigned URL for HTTP PUT operations.
- * Browsers/Mobile clients may point to this URL to upload objects directly to a bucket even if it is private.
- * This presigned URL can have an associated expiration time in seconds after which the URL is no longer valid.
- * The default expiry is set to 7 days
+/**
+ *
+ * Retrieve the client without basePath consideration
+ *
+ * @returns {Namespace} the client for the namespace
+ *
  */
-public presignedPutObject(bucketName: string, objectName: string, expiry: number = 604800): Observable<string>;
+public get client(): Namespace;
 
-/* 
- * Allows setting policy conditions to a presigned URL for POST operations.
- * Policies such as bucket name to receive object uploads, key name prefixes, expiry policy may be set
+/**
+ *
+ * Retrieve the client without basePath consideration
+ *
+ * @returns {Etcd3} the normal client (without namespace consideration)
+ *
  */
-public presignedPostPolicy(policy: MinioPostPolicy): Observable<MinioPresignedPostPolicyResult>;
+public etcd3Client(): Etcd3;
 
-/* 
- * Fetch the notification configuration stored in the S3 provider and that belongs to
- * the specified bucket name
+/**
+ *
+ * Get the value stored at path `key`.
+ *
+ * @param {string} key The key you want to retrieve the value
+ * @param {ResponseFormat} format The format you want for the result (default is string)
+ *
+ * @returns {string | object | number | Buffer | null | Error} The value of the object stored
+ *
  */
-public getBucketNotification(bucketName: string): Observable<any>;
+public get(key: string, format: ResponseFormat = ResponseFormat.String): Observable<string | object | Buffer | null | Error>;
 
-/* 
- * Upload a user-created notification configuration and associate it to the specified bucket name
+/**
+ *
+ * Append the value `value` at path `key`.
+ *
+ * @param {string} key The key you want to retrieve the value
+ * @param {string | Buffer | number} value The format you want for the result (default is string)
+ *
+ * @returns {IPutResponse} The result of the operation
+ *
  */
-public setBucketNotification(bucketName: string, bucketNotificationConfig: any): Observable<boolean>;
+public put(key: string, value: string | number | Object | Buffer): Observable<IPutResponse>;
 
-/* 
- * Remove the bucket notification configuration associated to the specified bucket
+/**
+ *
+ * Create a watcher for a specific key.
+ *
+ * @param {string} key The key you want to watch
+ *
+ * @returns {Watcher} The watcher instance created
+ *
  */
-public removeAllBucketNotification(bucketName: string): Observable<boolean>;
+public createWatcher(key: string): Observable<Watcher>;
 
-/* 
- * Listen for notifications on a bucket.
- * Additionally one can provider filters for prefix, suffix and events.
- * There is no prior set bucket notification needed to use this API.
- * This is an Minio extension API where unique identifiers are regitered and unregistered
- * by the server automatically based on incoming requests
+/**
+ *
+ * Create and acquire a lock for a key `key` specifying a ttl.
+ * It will automatically contact etcd to keep the connection live.
+ * When the connection is broken (end of process or lock released),
+ * the TTL is the time after when the lock will be released.
+ *
+ * @param {string} key The key
+ * @param {number} ttl The TTL value in seconds. Default value is 1
+ *
+ * @returns {Lock} The lock instance created
+ *
  */
-public listenBucketNotification(bucketName: string, prefix: string, suffix: string, events: string[]): EventEmitter;
+public acquireLock(key: string, ttl: number = 1): Observable<Lock>;
 
-/* 
- * Get the bucket policy associated with the specified bucket.
- * If objectPrefix is not empty, the bucket policy will be filtered based on object permissions as well.
- */
-public getBucketPolicy(bucketName: string, objectPrefix: string = ''): Observable<MinioPolicy>;
+/******************************************************************************************
+ *
+ * Lease Operations
+ *
+ ******************************************************************************************/
 
-/* 
- * Set the bucket policy associated with the specified bucket.
- * If objectPrefix is not empty, the bucket policy will only be assigned to objects that fit the given prefix
+/**
+ *
+ * Create a lease object with a ttl.
+ * The lease is automatically keeping alive until it is close.
+ *
+ * @param {number} ttl The TTL value in seconds. Default value is 1
+ *
+ * @returns {Lease} The lease instance created
+ *
  */
-public setBucketPolicy(bucketName: string, bucketPolicy: MinioPolicy, objectPrefix: string = ''): Observable<boolean>;
+public createLease(ttl: number = 1): Observable<Lease>;
+
+/**
+ *
+ * Create a lease object with a ttl and attach directly a key-value to it.
+ * The lease is automatically keeping alive until it is close.
+ *
+ * NOTE: Once the lease is closed, the key-value will be destroyed by etcd.
+ *
+ * @param {string} key The key where to store the value
+ * @param {string | Buffer | number} value The value that will be stored at `key` path
+ * @param {number} ttl The TTL value in seconds. Default value is 1
+ *
+ * @returns {Lease} The lease instance created
+ *
+ */
+public createLeaseWithValue(key: string, value: string | Buffer, ttl: number = 1): Observable<Lease>;
 
 ```
 
