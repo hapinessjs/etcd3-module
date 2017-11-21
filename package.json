@@ -1,7 +1,7 @@
 {
     "name": "@hapiness/etcd3",
     "version": "1.0.0",
-    "description": "Hapiness module for etcd3",
+    "description": "ETCD3 module for Hapiness framework",
     "main": "commonjs/index.js",
     "types": "index.d.ts",
     "private": false,
@@ -75,15 +75,15 @@
         "mocha": "^4.0.1",
         "mocha-typescript": "^1.1.7",
         "rimraf": "^2.6.1",
-        "rxjs": "^5.4.2",
+        "rxjs": "^5.5.2",
         "ts-node": "^3.2.1",
         "tslint": "^5.5.0",
         "typescript": "^2.5.3",
         "unit.js": "^2.0.0"
     },
     "peerDependencies": {
-        "@hapiness/core": "^1.2.0",
-        "rxjs": "^5.4.2"
+        "@hapiness/core": "^1.2.2",
+        "rxjs": "^5.5.2"
     },
     "engines": {
         "node": ">=8.4.0"
