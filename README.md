@@ -2,14 +2,14 @@
 
 <div style="margin-bottom:20px;">
 <div style="line-height:60px">
-    <a href="https://travis-ci.org/hapinessjs/empty-module.svg?branch=master">
-        <img src="https://travis-ci.org/hapinessjs/empty-module.svg?branch=master" alt="build" />
+    <a href="https://travis-ci.org/hapinessjs/etcd3-module.svg?branch=master">
+        <img src="https://travis-ci.org/hapinessjs/etcd3-module.svg?branch=master" alt="build" />
     </a>
     <a href="https://coveralls.io/github/hapinessjs/etcd3-module?branch=master">
         <img src="https://coveralls.io/repos/github/hapinessjs/etcd3-module/badge.svg?branch=master" alt="coveralls" />
     </a>
     <a href="https://david-dm.org/hapinessjs/etcd3-module">
-        <img src="https://david-dm.org/hapinessjs/empty-module.svg" alt="dependencies" />
+        <img src="https://david-dm.org/hapinessjs/etcd3-module.svg" alt="dependencies" />
     </a>
     <a href="https://david-dm.org/hapinessjs/etcd3-module?type=dev">
         <img src="https://david-dm.org/hapinessjs/etcd3-module/dev-status.svg" alt="devDependencies" />
@@ -50,18 +50,19 @@
 ### `yarn` or `npm` it in your `package.json`
 
 ```bash
-$ npm install --save @hapiness/etcd3
+$ npm install --save @hapiness/etcd3 @hapiness/core rxjs
 
 or
 
-$ yarn add @hapiness/etcd3
+$ yarn add @hapiness/etcd3 @hapiness/core rxjs
 ```
 
 ```javascript
 "dependencies": {
     "@hapiness/core": "^1.2.2",
     "@hapiness/etcd3": "^1.0.0",
-    //...
+    "rxjs", "^5.5.2"
+    //...
 }
 //...
 ```
@@ -314,7 +315,7 @@ public createLeaseWithValue(key: string, value: string | Buffer, ttl: number = 1
 
 <table>
     <tr>
-        <td colspan="4" align="center"><a href="https://www.tadaweb.com"><img src="https://tadaweb.com/images/tadaweb/logo.png" width="117" alt="tadaweb" /></a></td>
+        <td colspan="4" align="center"><a href="https://www.tadaweb.com"><img src="http://bit.ly/2xHQkTi" width="117" alt="tadaweb" /></a></td>
     </tr>
     <tr>
         <td align="center"><a href="https://github.com/Juneil"><img src="https://avatars3.githubusercontent.com/u/6546204?v=3&s=117" width="117"/></a></td>
