@@ -1,0 +1,91 @@
+{
+    "name": "@hapiness/etcd3",
+    "version": "1.0.0",
+    "description": "ETCD3 module for Hapiness framework",
+    "main": "commonjs/index.js",
+    "types": "index.d.ts",
+    "private": false,
+    "scripts": {
+        "test": "make test",
+        "pretest": "make pretest",
+        "coveralls": "make coveralls",
+        "packaging": "make packaging",
+        "prebuild": "make pretest && make test && make clean",
+        "build": "make tsc",
+        "postbuild": "make packaging"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/hapinessjs/etcd3-module.git"
+    },
+    "keywords": [
+        "HapiJS",
+        "Hapi",
+        "Hapiness",
+        "Framework",
+        "NodeJS",
+        "Etcd3",
+        "Node",
+        "HTTP",
+        "API",
+        "REST",
+        "Streams",
+        "Async",
+        "Decorator",
+        "RxJS",
+        "Rx",
+        "ReactiveX",
+        "Observable",
+        "Observer",
+        "Module",
+        "ES2015",
+        "ES2016",
+        "ES2017",
+        "ES6",
+        "ES7",
+        "ES8",
+        "Typescript"
+    ],
+    "contributors": [
+        {
+            "name": "Julien Fauville",
+            "url": "https://github.com/Juneil"
+        },
+        {
+            "name": "Sébastien Ritz",
+            "url": "https://github.com/reptilbud"
+        }
+    ],
+    "license": "SEE LICENSE IN https://github.com/hapinessjs/etcd3-module/blob/master/LICENSE.md",
+    "bugs": {
+        "url": "https://github.com/hapinessjs/etcd3-module/issues"
+    },
+    "homepage": "https://github.com/hapinessjs/etcd3-module#readme",
+    "dependencies": {
+        "@types/node": "^8.0.14",
+        "debug": "^3.0.1",
+        "etcd3": "^0.2.6"
+    },
+    "devDependencies": {
+        "@hapiness/core": "^1.2.2",
+        "@types/fs-extra": "^4.0.1",
+        "coveralls": "^3.0.0",
+        "fs-extra": "^4.0.0",
+        "istanbul": "^1.1.0-alpha.1",
+        "mocha": "^4.0.1",
+        "mocha-typescript": "^1.1.7",
+        "rimraf": "^2.6.1",
+        "rxjs": "^5.5.2",
+        "ts-node": "^3.2.1",
+        "tslint": "^5.5.0",
+        "typescript": "^2.5.3",
+        "unit.js": "^2.0.0"
+    },
+    "peerDependencies": {
+        "@hapiness/core": "^1.2.2",
+        "rxjs": "^5.5.2"
+    },
+    "engines": {
+        "node": ">=8.4.0"
+    }
+}
