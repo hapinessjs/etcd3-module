@@ -9,6 +9,8 @@ import { test, suite } from 'mocha-typescript';
  */
 import * as unit from 'unit.js';
 
+import { Observable } from 'rxjs';
+
 import { Etcd3Service, ResponseFormat } from '../../src';
 
 @suite('- Unit tests of Etcd3Service')
@@ -75,12 +77,14 @@ export class Etcd3ServiceTest {
         const stringFuncStub = unit.stub().returns(Promise.resolve());
         const bufferFuncStub = unit.stub().returns(Promise.resolve());
         const jsonFuncStub = unit.stub().returns(Promise.resolve());
+        const numberFuncStub = unit.stub().returns(Promise.resolve());
 
         const nsStub = unit.stub().returns({
             get: () => ({
                 string: stringFuncStub,
                 buffer: bufferFuncStub,
-                json: jsonFuncStub
+                json: jsonFuncStub,
+                number: numberFuncStub
             })
         });
 
@@ -96,6 +100,7 @@ export class Etcd3ServiceTest {
                 unit.value(stringFuncStub.callCount).is(1);
                 unit.value(bufferFuncStub.callCount).is(0);
                 unit.value(jsonFuncStub.callCount).is(0);
+                unit.value(numberFuncStub.callCount).is(0);
 
                 // Unsupported format is string
                 return instance.get('key', 100);
@@ -110,6 +115,7 @@ export class Etcd3ServiceTest {
                 unit.value(stringFuncStub.callCount).is(2);
                 unit.value(bufferFuncStub.callCount).is(0);
                 unit.value(jsonFuncStub.callCount).is(0);
+                unit.value(numberFuncStub.callCount).is(0);
 
                 return instance.get('key', ResponseFormat.Json);
             })
@@ -117,6 +123,15 @@ export class Etcd3ServiceTest {
                 unit.value(stringFuncStub.callCount).is(2);
                 unit.value(bufferFuncStub.callCount).is(0);
                 unit.value(jsonFuncStub.callCount).is(1);
+                unit.value(numberFuncStub.callCount).is(0);
+
+                return instance.get('key', ResponseFormat.Number);
+            })
+            .switchMap(_ => {
+                unit.value(stringFuncStub.callCount).is(2);
+                unit.value(bufferFuncStub.callCount).is(0);
+                unit.value(jsonFuncStub.callCount).is(1);
+                unit.value(numberFuncStub.callCount).is(1);
 
                 return instance.get('key', ResponseFormat.Buffer);
             })
@@ -125,6 +140,7 @@ export class Etcd3ServiceTest {
                     unit.value(stringFuncStub.callCount).is(2);
                     unit.value(bufferFuncStub.callCount).is(1);
                     unit.value(jsonFuncStub.callCount).is(1);
+                    unit.value(numberFuncStub.callCount).is(1);
 
                     unit.value(nsStub.callCount).is(1);
 
@@ -150,7 +166,7 @@ export class Etcd3ServiceTest {
 
         // Default format is string
         instance
-            .put('key', undefined)
+            .put('key', undefined, false)
             .subscribe(
                 _ => {
                     done(new Error('Should not be there'));
@@ -178,7 +194,7 @@ export class Etcd3ServiceTest {
 
         // Default format is string
         instance
-            .put('key', { test: 'micro' })
+            .put('key', { test: 'micro' }, false)
             .subscribe(
                 _ => {
                     unit.value(putStub.callCount).is(1);
@@ -211,7 +227,7 @@ export class Etcd3ServiceTest {
 
         // Default format is string
         instance
-            .put('key', 'value')
+            .put('key', 'value', false)
             .subscribe(
                 _ => {
                     unit.value(putStub.callCount).is(1);
@@ -224,6 +240,66 @@ export class Etcd3ServiceTest {
 
                     done();
                 },
+                err => done(err)
+            );
+    }
+
+    /**
+     * Test of `Etcd3Service` method put with return value
+     */
+    @test('- Test of `Etcd3Service` method put with string')
+    testEtcd3ServicePutFunctionWithReturnValue(done) {
+        const valueStub = unit.stub().returns({ exec: () => Promise.resolve() });
+        const putStub = unit.stub().returns({ value: valueStub });
+        const nsStub = unit.stub().returns({ put: putStub });
+
+        const instance = new Etcd3Service(<any>{
+            client: { namespace: nsStub },
+            config: { basePath: '/basepath' }
+        });
+
+        const getStub = unit.stub().returns(Observable.of('test'));
+        instance.get = getStub;
+
+        // Default format is string
+        instance
+            .put('key', 'value')
+            .switchMap(_ => {
+                // Get
+                unit.value(getStub.callCount).is(1);
+                unit.value(getStub.getCall(0).args[1]).is(ResponseFormat.String);
+
+                return instance.put('key', Buffer.from('test'));
+            })
+            .switchMap(
+                _ => {
+                    // Get
+                    unit.value(getStub.callCount).is(2);
+                    unit.value(getStub.getCall(1).args[1]).is(ResponseFormat.Buffer);
+
+                    return instance.put('key', 1);
+                }
+            )
+            .switchMap(
+                _ => {
+                    // Get
+                    unit.value(getStub.callCount).is(3);
+                    unit.value(getStub.getCall(2).args[1]).is(ResponseFormat.Number);
+
+                    return instance.put('key', { ok: 1 });
+                }
+            )
+            .switchMap(
+                _ => {
+                    // Get
+                    unit.value(getStub.callCount).is(4);
+                    unit.value(getStub.getCall(3).args[1]).is(ResponseFormat.Json);
+
+                    return Observable.of(null);
+                }
+            )
+            .subscribe(
+                _ => done(),
                 err => done(err)
             );
     }
@@ -246,7 +322,7 @@ export class Etcd3ServiceTest {
 
         // Default format is string
         instance
-            .put('key', buff)
+            .put('key', buff, false)
             .subscribe(
                 _ => {
                     unit.value(putStub.callCount).is(1);
@@ -279,7 +355,7 @@ export class Etcd3ServiceTest {
 
         // Default format is string
         instance
-            .put('key', 10)
+            .put('key', 10, false)
             .subscribe(
                 _ => {
                     unit.value(putStub.callCount).is(1);
@@ -293,6 +369,68 @@ export class Etcd3ServiceTest {
                     done();
                 },
                 err => done(err)
+            );
+    }
+
+    /**
+     * Test of `Etcd3Service` method delete
+     */
+    @test('- Test of `Etcd3Service` method delete')
+    testEtcd3ServiceDeleteFunction(done) {
+        const keyStub = unit.stub().returns(Promise.resolve({ ok: 1 }));
+        const delStub = unit.stub().returns({ key: keyStub });
+        const nsStub = unit.stub().returns({ delete: delStub });
+
+        const instance = new Etcd3Service(<any>{
+            client: { namespace: nsStub },
+            config: { basePath: '/basepath' }
+        });
+
+        instance
+            .delete('key')
+            .subscribe(
+                _ => {
+                    unit.number(nsStub.callCount).is(1);
+                    unit.value(delStub.callCount).is(1);
+                    unit.value(keyStub.callCount).is(1);
+
+                    unit.value(keyStub.getCall(0).args[0]).is('key');
+
+                    done();
+                },
+                err => {
+                    done(err);
+                }
+            );
+    }
+
+    /**
+     * Test of `Etcd3Service` method deleteAll
+     */
+    @test('- Test of `Etcd3Service` method deleteAll')
+    testEtcd3ServiceDeleteAllFunction(done) {
+        const allStub = unit.stub().returns(Promise.resolve({ ok: 1 }));
+        const delAllStub = unit.stub().returns({ all: allStub });
+        const nsStub = unit.stub().returns({ delete: delAllStub });
+
+        const instance = new Etcd3Service(<any>{
+            client: { namespace: nsStub },
+            config: { basePath: '/basepath' }
+        });
+
+        instance
+            .deleteAll()
+            .subscribe(
+                _ => {
+                    unit.number(nsStub.callCount).is(1);
+                    unit.value(delAllStub.callCount).is(1);
+                    unit.value(allStub.callCount).is(1);
+
+                    done();
+                },
+                err => {
+                    done(err);
+                }
             );
     }
 
