@@ -88,11 +88,13 @@ export class Etcd3Service {
      *
      */
     public get(key: string, format: ResponseFormat = ResponseFormat.String):
-        Observable<string | object | Buffer | null | Error> {
+        Observable<string | object | Buffer | number | null | Error> {
         const promise = this.client.get(key);
         switch (format) {
             case ResponseFormat.String:
                 return Observable.fromPromise(promise.string());
+            case ResponseFormat.Number:
+                return Observable.fromPromise(promise.number());
             case ResponseFormat.Json:
                 return Observable.fromPromise(promise.json());
             case ResponseFormat.Buffer:
