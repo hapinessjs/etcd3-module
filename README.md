@@ -248,6 +248,26 @@ public put(key: string, value: string | number | Object | Buffer): Observable<IP
 
 /**
  *
+ * Delete the key `key`.
+ *
+ * @param {string} key The key you want to delete
+ *
+ * @returns {IDeleteRangeResponse} The result of the operation
+ *
+ */
+public delete(key: string): Observable<IDeleteRangeResponse>;
+
+/**
+ *
+ * Delete all registered keys for the etcd3 client.
+ *
+ * @returns {IDeleteRangeResponse} The result of the operation
+ *
+ */
+public deleteAll(): Observable<IDeleteRangeResponse>;
+
+/**
+ *
  * Create a watcher for a specific key.
  *
  * @param {string} key The key you want to watch
