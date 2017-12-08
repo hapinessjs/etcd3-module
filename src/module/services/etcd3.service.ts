@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@hapiness/core';
 
-import { Etcd3, Namespace, Watcher, Lock, IPutResponse, Lease } from 'etcd3';
+import { Etcd3, Namespace, Watcher, Lock, IPutResponse, IDeleteRangeResponse, Lease } from 'etcd3';
 import { Observable } from 'rxjs';
 
 import { ResponseFormat } from '../interfaces';
@@ -88,11 +88,13 @@ export class Etcd3Service {
      *
      */
     public get(key: string, format: ResponseFormat = ResponseFormat.String):
-        Observable<string | object | Buffer | null | Error> {
+        Observable<string | object | Buffer | number | null | Error> {
         const promise = this.client.get(key);
         switch (format) {
             case ResponseFormat.String:
                 return Observable.fromPromise(promise.string());
+            case ResponseFormat.Number:
+                return Observable.fromPromise(promise.number());
             case ResponseFormat.Json:
                 return Observable.fromPromise(promise.json());
             case ResponseFormat.Buffer:
@@ -104,21 +106,60 @@ export class Etcd3Service {
 
     /**
      *
+     * Delete the key `key`.
+     *
+     * @param {string} key The key you want to delete
+     *
+     * @returns {IDeleteRangeResponse} The result of the operation
+     *
+     */
+    public delete(key: string): Observable<IDeleteRangeResponse> {
+        return Observable.fromPromise(this.client.delete().key(key));
+    }
+
+    /**
+     *
+     * Delete all registered keys for the etcd3 client.
+     *
+     * @returns {IDeleteRangeResponse} The result of the operation
+     *
+     */
+    public deleteAll(): Observable<IDeleteRangeResponse> {
+        return Observable.fromPromise(this.client.delete().all());
+    }
+
+    /**
+     *
      * Append the value `value` at path `key`.
      *
      * @param {string} key The key you want to retrieve the value
      * @param {string | Buffer | number} value The format you want for the result (default is string)
+     * @param {boolean} returnResult If you want to retrieve the value that was put
      *
      * @returns {IPutResponse} The result of the operation
      *
      */
-    public put(key: string, value: string | number | Object | Buffer): Observable<IPutResponse> {
+    public put(key: string, value: string | number | Object | Buffer, returnResult: boolean = true):
+        Observable<IPutResponse | string | number | Object | Buffer> {
+
         if (!value) {
             return Observable.throw(new Error('"value" should not be null nor undefined'));
         }
 
-        let _value: string | number | Buffer;
+        const _types = {
+            string: () => ResponseFormat.String,
+            number: () => ResponseFormat.Number,
+            object: () => {
+                const _obj = JSON.parse(JSON.stringify(value));
+                if (_obj.type !== 'Buffer') {
+                    return ResponseFormat.Json;
+                } else {
+                    return ResponseFormat.Buffer;
+                }
+            }
+        };
 
+        let _value: string | number | Buffer;
         if (typeof value === 'object') {
             const tmp = JSON.parse(JSON.stringify(value));
             if (tmp.type !== 'Buffer') {
@@ -130,8 +171,20 @@ export class Etcd3Service {
             _value = value;
         }
 
-        return Observable.fromPromise(
-            this.client.put(key).value(_value).exec()
+        const returnResult$ = Observable
+            .of(returnResult)
+            .switchMap(_ => Observable
+                .fromPromise(this.client.put(key).value(_value).exec())
+                .map(__ => ({ put_result: __, return_result: _ }))
+            )
+            .share();
+
+        return Observable.merge(
+            returnResult$.filter(_ => !_.return_result)
+                .map(_ => _.put_result),
+            returnResult$.filter(_ => !!_.return_result)
+                .map(_ => _types[typeof value]())
+                .switchMap(_ => this.get(key, _))
         );
     }
 
