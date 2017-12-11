@@ -199,14 +199,20 @@ export class Etcd3Service {
      * Create a watcher for a specific key.
      *
      * @param {string} key The key you want to watch
+     * @param {string} prefix The prefix you want to watch
      *
      * @returns {Watcher} The watcher instance created
      *
      */
-    public createWatcher(key: string): Observable<Watcher> {
-        return Observable.fromPromise(
-            this.client.watch().key(key).create()
-        );
+    public createWatcher(key: string, prefix: boolean = false): Observable<Watcher> {
+        const prefix$ = Observable.of(prefix).share();
+        return Observable.merge(
+            prefix$.filter(_ => !!_)
+                .map(_ => this.client.watch().prefix(key)),
+            prefix$.filter(_ => !_)
+                .map(_ => this.client.watch().key(key))
+        )
+        .flatMap(_ => Observable.fromPromise(_.create()));
     }
 
     /******************************************************************************************

@@ -1,6 +1,6 @@
 {
     "name": "@hapiness/etcd3",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Hapiness module for etcd3",
     "main": "commonjs/index.js",
     "types": "index.d.ts",

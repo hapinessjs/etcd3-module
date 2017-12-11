@@ -270,11 +270,12 @@ public deleteAll(): Observable<IDeleteRangeResponse>;
  * Create a watcher for a specific key.
  *
  * @param {string} key The key you want to watch
+ * @param {string} prefix The prefix you want to watch
  *
  * @returns {Watcher} The watcher instance created
  *
  */
-public createWatcher(key: string): Observable<Watcher>;
+public createWatcher(key: string, prefix?: boolean = false): Observable<Watcher>;
 
 /**
  *

@@ -439,8 +439,9 @@ export class Etcd3ServiceTest {
      */
     @test('- Test of `Etcd3Service` method createWatcher')
     testEtcd3ServiceCreateWatcherFunction(done) {
+        const prefixStub = unit.stub().returns({ create: () => Promise.resolve() });
         const keyStub = unit.stub().returns({ create: () => Promise.resolve() });
-        const watchStub = unit.stub().returns({ key: keyStub });
+        const watchStub = unit.stub().returns({ key: keyStub, prefix: prefixStub });
         const nsStub = unit.stub().returns({ watch: watchStub });
 
         const instance = new Etcd3Service(<any>{
@@ -451,17 +452,35 @@ export class Etcd3ServiceTest {
         // Default format is string
         instance
             .createWatcher('key')
-            .subscribe(
+            .flatMap(
                 _ => {
                     unit.value(watchStub.callCount).is(1);
 
+                    unit.value(prefixStub.callCount).is(0);
                     unit.value(keyStub.callCount).is(1);
+
                     unit.value(keyStub.getCall(0).args[0]).is('key');
 
                     unit.value(nsStub.callCount).is(1);
 
-                    done();
-                },
+                    return instance.createWatcher('key', true);
+                }
+            )
+            .flatMap(
+                _ => {
+                    unit.value(watchStub.callCount).is(2);
+
+                    unit.value(keyStub.callCount).is(1);
+                    unit.value(prefixStub.callCount).is(1);
+                    unit.value(prefixStub.getCall(0).args[0]).is('key');
+
+                    unit.value(nsStub.callCount).is(1);
+
+                    return Observable.of(true);
+                }
+            )
+            .subscribe(
+                _ => done(),
                 err => done(err)
             );
     }
