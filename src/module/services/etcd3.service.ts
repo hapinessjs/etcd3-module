@@ -25,18 +25,17 @@ export class Etcd3Service {
 
 
     constructor(@Inject(Etcd3Ext) private _manager) {
-        let basePath = '/';
+        this._basePath = (this._manager.config.basePath || '').trim().length ?
+            this._manager.config.basePath : '/';
+        this._client = this._manager.client.namespace(this._basePath);
+    }
 
-        if (this._manager.config.basePath) {
-            basePath = this._manager.config.basePath;
-            if (!this._manager.config.basePath.endsWith('/')) {
-                basePath = `${basePath}/`;
-            }
+    protected _fixKey(key: string) {
+        if (!key || !key.trim().length || key === '/') {
+            return '/';
         }
 
-        this._basePath = basePath;
-
-        this._client = this._manager.client.namespace(this._basePath);
+        return `${this._basePath.endsWith('/') ? '' : '/'}${key.split('/').filter(_ => _.trim().length).join('/')}`;
     }
 
     /**
@@ -87,8 +86,9 @@ export class Etcd3Service {
      * @returns {string | object | number | Buffer | null | Error} The value of the object stored
      *
      */
-    public get(key: string, format: ResponseFormat = ResponseFormat.String):
+    public get(_key: string, format: ResponseFormat = ResponseFormat.String):
         Observable<string | object | Buffer | number | null | Error> {
+        const key = this._fixKey(_key);
         const promise = this.client.get(key);
         switch (format) {
             case ResponseFormat.String:
@@ -113,7 +113,8 @@ export class Etcd3Service {
      * @returns {IDeleteRangeResponse} The result of the operation
      *
      */
-    public delete(key: string): Observable<IDeleteRangeResponse> {
+    public delete(_key: string): Observable<IDeleteRangeResponse> {
+        const key = this._fixKey(_key);
         return Observable.fromPromise(this.client.delete().key(key));
     }
 
@@ -139,9 +140,10 @@ export class Etcd3Service {
      * @returns {IPutResponse} The result of the operation
      *
      */
-    public put(key: string, value: string | number | Object | Buffer, returnResult: boolean = true):
+    public put(_key: string, value: string | number | Object | Buffer, returnResult: boolean = true):
         Observable<IPutResponse | string | number | Object | Buffer> {
 
+        const key = this._fixKey(_key);
         if (!value) {
             return Observable.throw(new Error('"value" should not be null nor undefined'));
         }
@@ -204,7 +206,8 @@ export class Etcd3Service {
      * @returns {Watcher} The watcher instance created
      *
      */
-    public createWatcher(key: string, prefix: boolean = false): Observable<Watcher> {
+    public createWatcher(_key: string, prefix: boolean = false): Observable<Watcher> {
+        const key = this._fixKey(_key);
         const prefix$ = Observable.of(prefix).share();
         return Observable.merge(
             prefix$.filter(_ => !!_)
@@ -234,7 +237,8 @@ export class Etcd3Service {
      * @returns {Lock} The lock instance created
      *
      */
-    public acquireLock(key: string, ttl: number = 1): Observable<Lock> {
+    public acquireLock(_key: string, ttl: number = 1): Observable<Lock> {
+        const key = this._fixKey(_key);
         return Observable.fromPromise(
             this.client.lock(key).ttl(ttl || 1).acquire()
         );
@@ -274,7 +278,8 @@ export class Etcd3Service {
      * @returns {Lease} The lease instance created
      *
      */
-    public createLeaseWithValue(key: string, value: string | Buffer, ttl: number = 1): Observable<Lease> {
+    public createLeaseWithValue(_key: string, value: string | Buffer, ttl: number = 1): Observable<Lease> {
+        const key = this._fixKey(_key);
         const lease = this.client.lease(ttl || 1);
         return Observable.fromPromise(
             lease.put(key).value(value).exec().then(_ => lease)
