@@ -62,7 +62,7 @@
     },
     "homepage": "https://github.com/hapinessjs/etcd3-module#readme",
     "dependencies": {
-        "@types/node": "^8.0.57",
+        "@types/node": "^8.0.58",
         "debug": "^3.1.0",
         "etcd3": "^0.2.6"
     },
