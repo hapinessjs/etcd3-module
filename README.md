@@ -60,7 +60,7 @@ $ yarn add @hapiness/etcd3 @hapiness/core rxjs
 ```javascript
 "dependencies": {
     "@hapiness/core": "^1.3.0",
-    "@hapiness/etcd3": "^1.0.1",
+    "@hapiness/etcd3": "^1.0.2",
     "rxjs", "^5.5.5"
     //...
 }
@@ -271,11 +271,12 @@ public deleteAll(): Observable<IDeleteRangeResponse>;
  * Create a watcher for a specific key.
  *
  * @param {string} key The key you want to watch
+ * @param {string} prefix The prefix you want to watch
  *
  * @returns {Watcher} The watcher instance created
  *
  */
-public createWatcher(key: string): Observable<Watcher>;
+public createWatcher(key: string, prefix?: boolean = false): Observable<Watcher>;
 
 /**
  *

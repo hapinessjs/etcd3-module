@@ -54,7 +54,7 @@ export class Etcd3ServiceTest {
         const instanceBasePathEndsWithSlash = new Etcd3Service(<any>{ client, config: { basePath: '/basepath/' } });
         const instanceNoBasePath = new Etcd3Service(<any>{ client, config: {} });
 
-        unit.string(instanceBasePath.basePath).is('/basepath/');
+        unit.string(instanceBasePath.basePath).is('/basepath');
         unit.string(instanceBasePathEndsWithSlash.basePath).is('/basepath/');
         unit.string(instanceNoBasePath.basePath).is('/');
 
@@ -67,6 +67,43 @@ export class Etcd3ServiceTest {
         unit.value(instanceNoBasePath.etcd3Client()['test']).is('Manager Client');
 
         unit.number(nsStub.callCount).is(3);
+    }
+
+    /**
+     * Test `Etcd3Service` function _fixKey
+     */
+    @test('- Test `Etcd3Service` function _fixKey')
+    testEtcd3ServiceFixKey() {
+        class Service extends Etcd3Service {
+            constructor(conf) {
+                super(conf);
+            }
+
+            fix(key) {
+                return this._fixKey(key);
+            }
+        }
+
+        const service = new Service({ config: {}, client: { namespace: () => {} } });
+        unit.string(service.fix('')).is('/');
+        unit.string(service.fix('/')).is('/');
+        unit.string(service.fix('/test')).is('test');
+        unit.string(service.fix('/test/')).is('test');
+        unit.string(service.fix('test')).is('test');
+
+        const service2 = new Service({ config: { basePath: '/bp/' }, client: { namespace: () => {} } });
+        unit.string(service2.fix('')).is('/');
+        unit.string(service2.fix('/')).is('/');
+        unit.string(service2.fix('/test')).is('test');
+        unit.string(service2.fix('/test/')).is('test');
+        unit.string(service2.fix('test')).is('test');
+
+        const service3 = new Service({ config: { basePath: '/bp' }, client: { namespace: () => {} } });
+        unit.string(service3.fix('')).is('/');
+        unit.string(service3.fix('/')).is('/');
+        unit.string(service3.fix('/test')).is('/test');
+        unit.string(service3.fix('/test/')).is('/test');
+        unit.string(service3.fix('test')).is('/test');
     }
 
     /**
@@ -198,7 +235,7 @@ export class Etcd3ServiceTest {
             .subscribe(
                 _ => {
                     unit.value(putStub.callCount).is(1);
-                    unit.value(putStub.getCall(0).args[0]).is('key');
+                    unit.value(putStub.getCall(0).args[0]).is('/key');
 
                     unit.value(valueStub.callCount).is(1);
                     unit.value(valueStub.getCall(0).args[0]).is(JSON.stringify({ test: 'micro' }));
@@ -231,7 +268,7 @@ export class Etcd3ServiceTest {
             .subscribe(
                 _ => {
                     unit.value(putStub.callCount).is(1);
-                    unit.value(putStub.getCall(0).args[0]).is('key');
+                    unit.value(putStub.getCall(0).args[0]).is('/key');
 
                     unit.value(valueStub.callCount).is(1);
                     unit.value(valueStub.getCall(0).args[0]).is('value');
@@ -326,7 +363,7 @@ export class Etcd3ServiceTest {
             .subscribe(
                 _ => {
                     unit.value(putStub.callCount).is(1);
-                    unit.value(putStub.getCall(0).args[0]).is('key');
+                    unit.value(putStub.getCall(0).args[0]).is('/key');
 
                     unit.value(valueStub.callCount).is(1);
                     unit.value(valueStub.getCall(0).args[0].toString('utf8')).is(buff.toString('utf8'));
@@ -359,7 +396,7 @@ export class Etcd3ServiceTest {
             .subscribe(
                 _ => {
                     unit.value(putStub.callCount).is(1);
-                    unit.value(putStub.getCall(0).args[0]).is('key');
+                    unit.value(putStub.getCall(0).args[0]).is('/key');
 
                     unit.value(valueStub.callCount).is(1);
                     unit.value(valueStub.getCall(0).args[0]).is(10);
@@ -394,7 +431,7 @@ export class Etcd3ServiceTest {
                     unit.value(delStub.callCount).is(1);
                     unit.value(keyStub.callCount).is(1);
 
-                    unit.value(keyStub.getCall(0).args[0]).is('key');
+                    unit.value(keyStub.getCall(0).args[0]).is('/key');
 
                     done();
                 },
@@ -439,8 +476,9 @@ export class Etcd3ServiceTest {
      */
     @test('- Test of `Etcd3Service` method createWatcher')
     testEtcd3ServiceCreateWatcherFunction(done) {
+        const prefixStub = unit.stub().returns({ create: () => Promise.resolve() });
         const keyStub = unit.stub().returns({ create: () => Promise.resolve() });
-        const watchStub = unit.stub().returns({ key: keyStub });
+        const watchStub = unit.stub().returns({ key: keyStub, prefix: prefixStub });
         const nsStub = unit.stub().returns({ watch: watchStub });
 
         const instance = new Etcd3Service(<any>{
@@ -451,17 +489,35 @@ export class Etcd3ServiceTest {
         // Default format is string
         instance
             .createWatcher('key')
-            .subscribe(
+            .flatMap(
                 _ => {
                     unit.value(watchStub.callCount).is(1);
 
+                    unit.value(prefixStub.callCount).is(0);
                     unit.value(keyStub.callCount).is(1);
-                    unit.value(keyStub.getCall(0).args[0]).is('key');
+
+                    unit.value(keyStub.getCall(0).args[0]).is('/key');
 
                     unit.value(nsStub.callCount).is(1);
 
-                    done();
-                },
+                    return instance.createWatcher('key', true);
+                }
+            )
+            .flatMap(
+                _ => {
+                    unit.value(watchStub.callCount).is(2);
+
+                    unit.value(keyStub.callCount).is(1);
+                    unit.value(prefixStub.callCount).is(1);
+                    unit.value(prefixStub.getCall(0).args[0]).is('/key');
+
+                    unit.value(nsStub.callCount).is(1);
+
+                    return Observable.of(true);
+                }
+            )
+            .subscribe(
+                _ => done(),
                 err => done(err)
             );
     }
@@ -487,9 +543,9 @@ export class Etcd3ServiceTest {
             .subscribe(
                 _ => {
                     unit.value(lockStub.callCount).is(3);
-                    unit.value(lockStub.getCall(0).args[0]).is('key');
-                    unit.value(lockStub.getCall(1).args[0]).is('key');
-                    unit.value(lockStub.getCall(2).args[0]).is('key');
+                    unit.value(lockStub.getCall(0).args[0]).is('/key');
+                    unit.value(lockStub.getCall(1).args[0]).is('/key');
+                    unit.value(lockStub.getCall(2).args[0]).is('/key');
 
                     unit.value(ttlStub.callCount).is(3);
                     unit.value(ttlStub.getCall(0).args[0]).is(1);
@@ -563,9 +619,9 @@ export class Etcd3ServiceTest {
                     unit.value(leaseStub.getCall(2).args[0]).is(1);
 
                     unit.value(putStub.callCount).is(3);
-                    unit.value(putStub.getCall(0).args[0]).is('key');
-                    unit.value(putStub.getCall(1).args[0]).is('key');
-                    unit.value(putStub.getCall(2).args[0]).is('key');
+                    unit.value(putStub.getCall(0).args[0]).is('/key');
+                    unit.value(putStub.getCall(1).args[0]).is('/key');
+                    unit.value(putStub.getCall(2).args[0]).is('/key');
 
                     unit.value(valueStub.callCount).is(3);
                     unit.value(valueStub.getCall(0).args[0]).is('value');
