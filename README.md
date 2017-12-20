@@ -236,6 +236,17 @@ public get(key: string, format: ResponseFormat = ResponseFormat.String): Observa
 
 /**
  *
+ * Get all keys and values stored under the given `prefix`.
+ *
+ * @param {string} prefix The prefix under which you want to start looking
+ *
+ * @returns { { [key: string]: string } } An object having all path as keys and all values stored under them
+ *
+ */
+public getWithPrefix(_prefix: string): Observable<{ [key: string]: string }>;
+
+/**
+ *
  * Append the value `value` at path `key`.
  *
  * @param {string} key The key you want to retrieve the value
