@@ -188,6 +188,38 @@ export class Etcd3ServiceTest {
     }
 
     /**
+     * Test of `Etcd3Service` method getWithPrefix
+     */
+    @test('- Test of `Etcd3Service` method getWithPrefix')
+    testEtcd3ServiceGetWithPrefixFunction(done) {
+        const prefixFuncStub = unit.stub().returns(Promise.resolve());
+
+        const nsStub = unit.stub().returns({
+            getAll: () => ({
+                prefix: prefixFuncStub
+            })
+        });
+
+        const instance = new Etcd3Service(<any>{
+            client: { namespace: nsStub },
+            config: { basePath: '/basepath' }
+        });
+
+        // Default format is string
+        instance
+            .getWithPrefix('key')
+            .subscribe(
+                _ => {
+                    unit.value(prefixFuncStub.callCount).is(1);
+                    unit.value(nsStub.callCount).is(1);
+
+                    done();
+                },
+                err => done(err)
+            );
+    }
+
+    /**
      * Test of `Etcd3Service` method put with undefined value should return error
      */
     @test('- Test of `Etcd3Service` method put with undefined value should return error')

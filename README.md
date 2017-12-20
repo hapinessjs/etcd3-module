@@ -60,7 +60,7 @@ $ yarn add @hapiness/etcd3 @hapiness/core rxjs
 ```javascript
 "dependencies": {
     "@hapiness/core": "^1.3.0",
-    "@hapiness/etcd3": "^1.0.2",
+    "@hapiness/etcd3": "^1.0.3",
     "rxjs", "^5.5.5"
     //...
 }
@@ -233,6 +233,17 @@ public etcd3Client(): Etcd3;
  *
  */
 public get(key: string, format: ResponseFormat = ResponseFormat.String): Observable<string | object | Buffer | null | Error>;
+
+/**
+ *
+ * Get all keys and values stored under the given `prefix`.
+ *
+ * @param {string} prefix The prefix under which you want to start looking
+ *
+ * @returns { { [key: string]: string } } An object having all path as keys and all values stored under them
+ *
+ */
+public getWithPrefix(_prefix: string): Observable<{ [key: string]: string }>;
 
 /**
  *

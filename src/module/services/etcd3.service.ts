@@ -106,6 +106,20 @@ export class Etcd3Service {
 
     /**
      *
+     * Get all keys and values stored under the given `prefix`.
+     *
+     * @param {string} prefix The prefix under which you want to start looking
+     *
+     * @returns { { [key: string]: string } } An object having all path as keys and all values stored under them
+     *
+     */
+    public getWithPrefix(_prefix: string): Observable<{ [key: string]: string }> {
+        const prefix = this._fixKey(_prefix);
+        return Observable.fromPromise(this.client.getAll().prefix(prefix));
+    }
+
+    /**
+     *
      * Delete the key `key`.
      *
      * @param {string} key The key you want to delete
