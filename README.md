@@ -60,7 +60,7 @@ $ yarn add @hapiness/etcd3 @hapiness/core rxjs
 ```javascript
 "dependencies": {
     "@hapiness/core": "^1.3.0",
-    "@hapiness/etcd3": "^1.0.2",
+    "@hapiness/etcd3": "^1.0.3",
     "rxjs", "^5.5.5"
     //...
 }
