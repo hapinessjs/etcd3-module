@@ -65,7 +65,7 @@ export class Etcd3Service {
      * @returns {Etcd3} the normal client (without namespace consideration)
      *
      */
-    public etcd3Client(): Etcd3 {
+    public get etcd3Client(): Etcd3 {
         return this._manager.client;
     }
 
@@ -298,5 +298,14 @@ export class Etcd3Service {
         return Observable.fromPromise(
             lease.put(key).value(value).exec().then(_ => lease)
         );
+    }
+
+    /**
+     *
+     * Frees resources associated with the client.
+     *
+     */
+    public close(): void {
+        this.etcd3Client.close();
     }
 }
