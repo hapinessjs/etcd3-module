@@ -62,9 +62,9 @@ export class Etcd3ServiceTest {
         unit.value(instanceBasePathEndsWithSlash.client).is({ get: 'NS Client' });
         unit.value(instanceNoBasePath.client).is({ get: 'NS Client' });
 
-        unit.value(instanceBasePath.etcd3Client()['test']).is('Manager Client');
-        unit.value(instanceBasePathEndsWithSlash.etcd3Client()['test']).is('Manager Client');
-        unit.value(instanceNoBasePath.etcd3Client()['test']).is('Manager Client');
+        unit.value(instanceBasePath.etcd3Client['test']).is('Manager Client');
+        unit.value(instanceBasePathEndsWithSlash.etcd3Client['test']).is('Manager Client');
+        unit.value(instanceNoBasePath.etcd3Client['test']).is('Manager Client');
 
         unit.number(nsStub.callCount).is(3);
     }

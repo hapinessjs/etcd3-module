@@ -1,11 +1,20 @@
-import { CoreModule, Extension, ExtensionWithConfig, OnExtensionLoad } from '@hapiness/core';
+import {
+    CoreModule,
+    Extension,
+    ExtensionWithConfig,
+    OnExtensionLoad,
+    OnShutdown,
+    ExtensionShutdown,
+    ExtensionShutdownPriority
+} from '@hapiness/core';
 
 import { Observable } from 'rxjs/Observable';
 
 import { Etcd3Manager } from './managers';
 import { Etcd3Config } from './interfaces';
+import { Etcd3 } from '.';
 
-export class Etcd3Ext implements OnExtensionLoad {
+export class Etcd3Ext implements OnExtensionLoad, OnShutdown {
 
     public static setConfig(config: Etcd3Config): ExtensionWithConfig {
         return {
@@ -31,5 +40,14 @@ export class Etcd3Ext implements OnExtensionLoad {
                 token: Etcd3Ext,
                 value: _
             }));
+    }
+
+    onShutdown(module: CoreModule, manager: Etcd3Manager): ExtensionShutdown {
+        return {
+            priority: ExtensionShutdownPriority.NORMAL,
+            resolver: Observable
+                .of(manager.client)
+                .do((_: Etcd3) => _.close())
+        };
     }
 }
