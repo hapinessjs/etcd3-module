@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@hapiness/core';
 
-import { Watcher, Lock, IPutResponse, IDeleteRangeResponse, Lease } from 'etcd3';
+import { Watcher, Lock, IPutResponse, IDeleteRangeResponse, Lease, Namespace, Etcd3 } from 'etcd3';
 import { Observable } from 'rxjs';
 
 import { ResponseFormat } from '../interfaces';
@@ -14,6 +14,14 @@ export class Etcd3Service {
 
     public get basePath(): string {
         return this._manager.basePath;
+    }
+
+    public get client(): Etcd3 {
+        return this._manager.client;
+    }
+
+    public get namespace(): Namespace {
+        return this._manager.namespace;
     }
 
     public get(_key: string, format: ResponseFormat = ResponseFormat.String):

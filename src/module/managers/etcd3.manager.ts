@@ -20,7 +20,11 @@ export class Etcd3Manager {
         }
     }
 
-    get client(): Namespace {
+    get client(): Etcd3 {
+        return this._etcd3client;
+    }
+
+    get namespace(): Namespace {
         return this._client;
     }
 
