@@ -46,8 +46,8 @@ export class Etcd3Ext implements OnExtensionLoad, OnShutdown {
         return {
             priority: ExtensionShutdownPriority.NORMAL,
             resolver: Observable
-                .of(manager.client)
-                .do((_: Etcd3) => _.close())
+                .of(manager)
+                .do(_ => _.close())
         };
     }
 }
