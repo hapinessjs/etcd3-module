@@ -69,7 +69,7 @@ export class Etcd3Manager {
     public get(_key: string, format: ResponseFormat = ResponseFormat.String):
         Observable<string | object | Buffer | number | null | Error> {
         const key = this._fixKey(_key);
-        const promise = this.client.get(key);
+        const promise = this.namespace.get(key);
         switch (format) {
             case ResponseFormat.String:
                 return Observable.fromPromise(promise.string());
@@ -95,7 +95,7 @@ export class Etcd3Manager {
      */
     public getWithPrefix(_prefix: string): Observable<{ [key: string]: string }> {
         const prefix = this._fixKey(_prefix);
-        return Observable.fromPromise(this.client.getAll().prefix(prefix));
+        return Observable.fromPromise(this.namespace.getAll().prefix(prefix));
     }
 
     /**
@@ -109,7 +109,7 @@ export class Etcd3Manager {
      */
     public delete(_key: string): Observable<IDeleteRangeResponse> {
         const key = this._fixKey(_key);
-        return Observable.fromPromise(this.client.delete().key(key));
+        return Observable.fromPromise(this.namespace.delete().key(key));
     }
 
     /**
@@ -120,7 +120,7 @@ export class Etcd3Manager {
      *
      */
     public deleteAll(): Observable<IDeleteRangeResponse> {
-        return Observable.fromPromise(this.client.delete().all());
+        return Observable.fromPromise(this.namespace.delete().all());
     }
 
     /**
@@ -170,7 +170,7 @@ export class Etcd3Manager {
         const returnResult$ = Observable
             .of(returnResult)
             .switchMap(_ => Observable
-                .fromPromise(this.client.put(key).value(_value).exec())
+                .fromPromise(this.namespace.put(key).value(_value).exec())
                 .map(__ => ({ put_result: __, return_result: _ }))
             )
             .share();
@@ -205,9 +205,9 @@ export class Etcd3Manager {
         const prefix$ = Observable.of(prefix).share();
         return Observable.merge(
             prefix$.filter(_ => !!_)
-                .map(_ => this.client.watch().prefix(key)),
+                .map(_ => this.namespace.watch().prefix(key)),
             prefix$.filter(_ => !_)
-                .map(_ => this.client.watch().key(key))
+                .map(_ => this.namespace.watch().key(key))
         )
             .flatMap(_ => Observable.fromPromise(_.create()));
     }
@@ -234,7 +234,7 @@ export class Etcd3Manager {
     public acquireLock(_key: string, ttl: number = 1): Observable<Lock> {
         const key = this._fixKey(_key);
         return Observable.fromPromise(
-            this.client.lock(key).ttl(ttl || 1).acquire()
+            this.namespace.lock(key).ttl(ttl || 1).acquire()
         );
     }
 
@@ -255,7 +255,7 @@ export class Etcd3Manager {
      *
      */
     public createLease(ttl: number = 1): Observable<Lease> {
-        return Observable.of(this.client.lease(ttl || 1));
+        return Observable.of(this.namespace.lease(ttl || 1));
     }
 
     /**
@@ -274,7 +274,7 @@ export class Etcd3Manager {
      */
     public createLeaseWithValue(_key: string, value: string | Buffer, ttl: number = 1): Observable<Lease> {
         const key = this._fixKey(_key);
-        const lease = this.client.lease(ttl || 1);
+        const lease = this.namespace.lease(ttl || 1);
         return Observable.fromPromise(
             lease.put(key).value(value).exec().then(_ => lease)
         );
